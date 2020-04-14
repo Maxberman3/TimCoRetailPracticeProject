@@ -17,29 +17,30 @@ namespace TRMDataManager.App_Start
                     {
                         "application/x-www-form-urlencoded"
                     },
-                    parameters =
+                    parameters = new List<Parameter>
                     {
                         new Parameter
                         {
-                            type="string",
-                            name="grant_type",
+                            type = "string",
+                            name = "grant_type",
                             required = true,
+                            @in = "formData",
                             @default="password"
                         },
                         new Parameter
                         {
-                            type="string",
-                            name="username",
-                            required = true,
-                            @in="formData"
+                            type = "string",
+                            name = "username",
+                            required = false,
+                            @in = "formData"
                         },
                         new Parameter
                         {
-                            type="string",
-                            name="password",
-                            required = true,
-                            @in="formData"
-                        }
+                            type = "string",
+                            name = "password",
+                            required = false,
+                            @in = "formData"
+                        },
                     }
                 }
             });
