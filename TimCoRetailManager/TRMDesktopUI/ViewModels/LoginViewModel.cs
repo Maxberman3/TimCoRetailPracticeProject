@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
-using System;
+using System.Threading.Tasks;
+using TRMDesktopUI.Helpers;
 
 namespace TRMDesktopUI.ViewModels
 {
@@ -41,9 +42,14 @@ namespace TRMDesktopUI.ViewModels
 				return output;
 			}
 		}
-		public void LogIn()
+		private readonly IAPIHelper iAPIHelper;
+		public LoginViewModel(IAPIHelper iAPIHelper)
 		{
-			Console.WriteLine();
+			this.iAPIHelper = iAPIHelper;
+		}
+		public async Task LogIn()
+		{
+			Models.AuthenticatedUser result = await iAPIHelper.AuthenticateAsync(Username, Password);
 		}
 	}
 }

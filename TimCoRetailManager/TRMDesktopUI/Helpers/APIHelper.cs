@@ -1,17 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using TRMDesktopUI.Models;
 
 namespace TRMDesktopUI.Helpers
 {
-    class APIHelper
+    public class APIHelper : IAPIHelper
     {
-        public HttpClient ApiClient { get; set; }
+        private HttpClient ApiClient { get; set; }
 
         private void InitializeClient()
         {
-            ApiClient = new HttpClient();
+            ApiClient = new HttpClient
+            {
+                BaseAddress = new Uri(ConfigurationManager.AppSettings["api"])
+            };
             ApiClient.DefaultRequestHeaders.Accept.Clear();
             ApiClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -19,7 +25,7 @@ namespace TRMDesktopUI.Helpers
         {
             InitializeClient();
         }
-        public async Task AuthenticateAsync(string username, string password)
+        public async Task<AuthenticatedUser> AuthenticateAsync(string username, string password)
         {
             FormUrlEncodedContent data = new FormUrlEncodedContent(new[]
             {
@@ -27,11 +33,16 @@ namespace TRMDesktopUI.Helpers
                 new KeyValuePair<string,string>("username",username),
                 new KeyValuePair<string,string>("password",password),
             });
-            using (HttpResponseMessage response = await ApiClient.PostAsync("/Token", data))
+            using (HttpResponseMessage response = await ApiClient.PostAsync("/token", data))
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    string result = await response.Content.ReadAsAsync<string>();
+                    AuthenticatedUser result = await response.Content.ReadAsAsync<AuthenticatedUser>();
+                    return result;
+                }
+                else
+                {
+                    throw new Exception(response.ReasonPhrase);
                 }
             }
         }
