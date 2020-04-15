@@ -44,6 +44,34 @@ namespace TRMDesktopUI.ViewModels
 			}
 		}
 		private readonly IAPIHelper iAPIHelper;
+		private readonly bool isErrorVisible;
+
+		public bool IsErrorVisible
+		{
+			get
+			{
+				bool output = false;
+				if (ErrorMessage.Length > 0)
+				{
+					output = true;
+				}
+				return output;
+			}
+		}
+		private string errorMessage;
+
+		public string ErrorMessage
+		{
+			get => errorMessage;
+			set
+			{
+				errorMessage = value;
+				NotifyOfPropertyChange(() => ErrorMessage);
+				NotifyOfPropertyChange(() => IsErrorVisible);
+			}
+		}
+
+
 		public LoginViewModel(IAPIHelper iAPIHelper)
 		{
 			this.iAPIHelper = iAPIHelper;
@@ -52,11 +80,12 @@ namespace TRMDesktopUI.ViewModels
 		{
 			try
 			{
+				ErrorMessage = "";
 				Models.AuthenticatedUser result = await iAPIHelper.AuthenticateAsync(Username, Password);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message);
+				ErrorMessage = e.Message;
 			}
 		}
 	}
