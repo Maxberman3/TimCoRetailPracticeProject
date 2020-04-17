@@ -15,7 +15,7 @@ namespace TRMDataManager.App_Start
             operation.parameters.Add(new Parameter
             {
                 name = "Authorization",
-                @in = "Header",
+                @in = "header",
                 description = "access token",
                 required = false,
                 type = "string"
