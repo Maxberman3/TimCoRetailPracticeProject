@@ -1,7 +1,8 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Threading.Tasks;
-using TRMDesktopUI.Helpers;
+using TRMDesktopUI.Library.Api;
+using TRMDesktopUI.Library.Models;
 
 namespace TRMDesktopUI.ViewModels
 {
@@ -81,7 +82,9 @@ namespace TRMDesktopUI.ViewModels
 			try
 			{
 				ErrorMessage = "";
-				Models.AuthenticatedUser result = await iAPIHelper.AuthenticateAsync(Username, Password);
+				AuthenticatedUser result = await iAPIHelper.AuthenticateAsync(Username, Password);
+				//Capture more information about the user
+				await iAPIHelper.GetLoggedInUserInfo(result.Access_Token);
 			}
 			catch (Exception e)
 			{
