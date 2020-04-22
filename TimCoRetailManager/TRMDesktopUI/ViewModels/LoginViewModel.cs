@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Threading.Tasks;
+using TRMDesktopUI.EventModels;
 using TRMDesktopUI.Library.Api;
 using TRMDesktopUI.Library.Models;
 
@@ -72,10 +73,12 @@ namespace TRMDesktopUI.ViewModels
 			}
 		}
 
+		public IEventAggregator Events { get; }
 
-		public LoginViewModel(IAPIHelper iAPIHelper)
+		public LoginViewModel(IAPIHelper iAPIHelper, IEventAggregator events)
 		{
 			this.iAPIHelper = iAPIHelper;
+			Events = events;
 		}
 		public async Task LogIn()
 		{
@@ -85,6 +88,7 @@ namespace TRMDesktopUI.ViewModels
 				AuthenticatedUser result = await iAPIHelper.AuthenticateAsync(Username, Password);
 				//Capture more information about the user
 				await iAPIHelper.GetLoggedInUserInfo(result.Access_Token);
+				Events.PublishOnUIThread(new LogOnEvent());
 			}
 			catch (Exception e)
 			{

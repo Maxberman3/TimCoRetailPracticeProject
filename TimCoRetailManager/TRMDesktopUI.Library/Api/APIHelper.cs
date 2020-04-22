@@ -59,13 +59,12 @@ namespace TRMDesktopUI.Library.Api
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    LoggedInUserModel result = await response.Content.ReadAsAsync<LoggedInUserModel>();
-                    LoggedInUser.Id = result.Id;
-                    LoggedInUser.LastName = result.LastName;
-                    LoggedInUser.FirstName = result.FirstName;
-                    LoggedInUser.CreatedDate = result.CreatedDate;
-                    LoggedInUser.EmailAddress = result.EmailAddress;
-                    LoggedInUser.Token = token;
+                    List<LoggedInUserModel> result = await response.Content.ReadAsAsync<List<LoggedInUserModel>>();
+                    LoggedInUser.Id = result[0].Id;
+                    LoggedInUser.LastName = result[0].LastName;
+                    LoggedInUser.FirstName = result[0].FirstName;
+                    LoggedInUser.CreatedDate = result[0].CreatedDate;
+                    LoggedInUser.EmailAddress = result[0].EmailAddress;
                 }
                 else
                 {
