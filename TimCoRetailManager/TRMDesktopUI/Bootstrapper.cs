@@ -40,6 +40,7 @@ namespace TRMDesktopUI
         protected override void Configure()
         {
             container.Instance(container);
+            container.PerRequest<IProductEndpoint, ProductEndpoint>();
 
             container.
                 Singleton<IWindowManager, WindowManager>()

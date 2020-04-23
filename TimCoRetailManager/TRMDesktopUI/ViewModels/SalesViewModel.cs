@@ -1,13 +1,33 @@
 ﻿using Caliburn.Micro;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
+using TRMDesktopUI.Library.Api;
+using TRMDesktopUI.Library.Models;
 
 namespace TRMDesktopUI.ViewModels
 {
 	class SalesViewModel : Screen
 	{
-		private BindingList<string> products;
 
-		public BindingList<string> Products
+		private readonly IProductEndpoint productEndpoint;
+		public SalesViewModel(IProductEndpoint productEndpoint)
+		{
+			this.productEndpoint = productEndpoint;
+		}
+		protected override async void OnViewLoaded(object view)
+		{
+			base.OnViewLoaded(view);
+			await LoadProductsAsync();
+		}
+		public async Task LoadProductsAsync()
+		{
+			List<ProductModel> products = await productEndpoint.GetAllAsync();
+			Products = new BindingList<ProductModel>(products);
+		}
+		private BindingList<ProductModel> products;
+
+		public BindingList<ProductModel> Products
 		{
 			get => products;
 			set
