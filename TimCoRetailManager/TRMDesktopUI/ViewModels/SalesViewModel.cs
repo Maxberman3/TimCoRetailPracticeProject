@@ -1,8 +1,11 @@
 ﻿using Caliburn.Micro;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using TRMDesktopUI.Library.Api;
+using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
 
 namespace TRMDesktopUI.ViewModels
@@ -11,9 +14,12 @@ namespace TRMDesktopUI.ViewModels
 	{
 
 		private readonly IProductEndpoint productEndpoint;
-		public SalesViewModel(IProductEndpoint productEndpoint)
+		private readonly IConfigHelper configHelper;
+
+		public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper)
 		{
 			this.productEndpoint = productEndpoint;
+			this.configHelper = configHelper;
 		}
 		protected override async void OnViewLoaded(object view)
 		{
@@ -36,7 +42,20 @@ namespace TRMDesktopUI.ViewModels
 				NotifyOfPropertyChange(() => Products);
 			}
 		}
-		private int itemQuantity;
+		private ProductModel selectedProduct;
+
+		public ProductModel SelectedProduct
+		{
+			get { return selectedProduct; }
+			set
+			{
+				selectedProduct = value;
+				NotifyOfPropertyChange(() => SelectedProduct);
+				NotifyOfPropertyChange(() => CanAddToCart);
+			}
+		}
+
+		private int itemQuantity = 1;
 
 		public int ItemQuantity
 		{
@@ -45,11 +64,12 @@ namespace TRMDesktopUI.ViewModels
 			{
 				itemQuantity = value;
 				NotifyOfPropertyChange(() => ItemQuantity);
+				NotifyOfPropertyChange(() => CanAddToCart);
 			}
 		}
-		private BindingList<string> shoppingCart;
+		private BindingList<CartItemModel> shoppingCart = new BindingList<CartItemModel>();
 
-		public BindingList<string> ShoppingCart
+		public BindingList<CartItemModel> ShoppingCart
 		{
 			get => shoppingCart;
 			set
@@ -62,24 +82,44 @@ namespace TRMDesktopUI.ViewModels
 		{
 			get
 			{
-				//TODO: replace with calculation
-				return "$0.00";
+
+				return CalculateSubTotal().ToString("C");
 			}
+		}
+		private decimal CalculateSubTotal()
+		{
+			decimal subtotal = 0;
+			foreach (CartItemModel item in ShoppingCart)
+			{
+				subtotal += item.Product.RetailPrice * item.QuantityInCart;
+			}
+			return subtotal;
 		}
 		public string Tax
 		{
 			get
 			{
-				//TODO: replace with calculation
-				return "$0.00";
+				return CalculateTax().ToString("C");
 			}
+		}
+		private decimal CalculateTax()
+		{
+			decimal taxAmount = 0;
+			decimal taxRate = Convert.ToDecimal(configHelper.GetTaxRate());
+			foreach (CartItemModel item in ShoppingCart)
+			{
+				if (item.Product.IsTaxable)
+				{
+					taxAmount += (item.Product.RetailPrice * item.QuantityInCart * taxRate);
+				}
+			}
+			return taxAmount;
 		}
 		public string Total
 		{
 			get
 			{
-				//TODO: replace with calculation
-				return "$0.00";
+				return (CalculateSubTotal() + CalculateTax()).ToString("C");
 			}
 		}
 
@@ -88,7 +128,10 @@ namespace TRMDesktopUI.ViewModels
 			get
 			{
 				bool output = false;
-				//make sure eligible to add
+				if (ItemQuantity > 0 & SelectedProduct?.QuantityInStock >= ItemQuantity)
+				{
+					output = true;
+				}
 				return output;
 			}
 		}
@@ -109,6 +152,37 @@ namespace TRMDesktopUI.ViewModels
 				//make sure something is in the cart
 				return output;
 			}
+		}
+		public void AddToCart()
+		{
+			CartItemModel existingItem = ShoppingCart.FirstOrDefault(x => x.Product == SelectedProduct);
+			if (existingItem != null)
+			{
+				existingItem.QuantityInCart += ItemQuantity;
+				ShoppingCart.Remove(existingItem);
+				ShoppingCart.Add(existingItem);
+			}
+			else
+			{
+				CartItemModel cartItemModel = new CartItemModel
+				{
+					Product = SelectedProduct,
+					QuantityInCart = ItemQuantity
+				};
+				ShoppingCart.Add(cartItemModel);
+			}
+			SelectedProduct.QuantityInStock -= itemQuantity;
+			itemQuantity = 1;
+			NotifyOfPropertyChange(() => SubTotal);
+			NotifyOfPropertyChange(() => ShoppingCart);
+			NotifyOfPropertyChange(() => Tax);
+		}
+		public void RemoveFromCart()
+		{
+			NotifyOfPropertyChange(() => SubTotal);
+			NotifyOfPropertyChange(() => ShoppingCart);
+			NotifyOfPropertyChange(() => Tax);
+
 		}
 		public void CheckOut()
 		{
