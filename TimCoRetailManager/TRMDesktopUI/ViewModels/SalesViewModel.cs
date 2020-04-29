@@ -175,6 +175,7 @@ namespace TRMDesktopUI.ViewModels
 			NotifyOfPropertyChange(() => ShoppingCart);
 			NotifyOfPropertyChange(() => SubTotal);
 			NotifyOfPropertyChange(() => Tax);
+			NotifyOfPropertyChange(() => Total);
 			NotifyOfPropertyChange(() => CanCheckOut);
 		}
 		public void RemoveFromCart()
