@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using AutoMapper;
+using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using TRMDesktopUI.Library.Api;
 using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
+using TRMDesktopUI.Models;
 
 namespace TRMDesktopUI.ViewModels
 {
@@ -16,12 +18,14 @@ namespace TRMDesktopUI.ViewModels
 		private readonly IProductEndpoint productEndpoint;
 		private readonly IConfigHelper configHelper;
 		private readonly ISaleEndpoint saleEndpoint;
+		private readonly IMapper mapper;
 
-		public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper, ISaleEndpoint saleEndpoint)
+		public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper, ISaleEndpoint saleEndpoint, IMapper mapper)
 		{
 			this.productEndpoint = productEndpoint;
 			this.configHelper = configHelper;
 			this.saleEndpoint = saleEndpoint;
+			this.mapper = mapper;
 		}
 		protected override async void OnViewLoaded(object view)
 		{
@@ -30,12 +34,13 @@ namespace TRMDesktopUI.ViewModels
 		}
 		public async Task LoadProductsAsync()
 		{
-			List<ProductModel> products = await productEndpoint.GetAllAsync();
-			Products = new BindingList<ProductModel>(products);
+			List<ProductModel> productsList = await productEndpoint.GetAllAsync();
+			List<ProductDisplayModel> products = mapper.Map<List<ProductDisplayModel>>(productsList);
+			Products = new BindingList<ProductDisplayModel>(products);
 		}
-		private BindingList<ProductModel> products;
+		private BindingList<ProductDisplayModel> products;
 
-		public BindingList<ProductModel> Products
+		public BindingList<ProductDisplayModel> Products
 		{
 			get => products;
 			set
@@ -44,9 +49,9 @@ namespace TRMDesktopUI.ViewModels
 				NotifyOfPropertyChange(() => Products);
 			}
 		}
-		private ProductModel selectedProduct;
+		private ProductDisplayModel selectedProduct;
 
-		public ProductModel SelectedProduct
+		public ProductDisplayModel SelectedProduct
 		{
 			get { return selectedProduct; }
 			set
@@ -69,9 +74,9 @@ namespace TRMDesktopUI.ViewModels
 				NotifyOfPropertyChange(() => CanAddToCart);
 			}
 		}
-		private BindingList<CartItemModel> shoppingCart = new BindingList<CartItemModel>();
+		private BindingList<CartItemDisplayModel> shoppingCart = new BindingList<CartItemDisplayModel>();
 
-		public BindingList<CartItemModel> ShoppingCart
+		public BindingList<CartItemDisplayModel> ShoppingCart
 		{
 			get => shoppingCart;
 			set
@@ -91,7 +96,7 @@ namespace TRMDesktopUI.ViewModels
 		private decimal CalculateSubTotal()
 		{
 			decimal subtotal = 0;
-			foreach (CartItemModel item in ShoppingCart)
+			foreach (CartItemDisplayModel item in ShoppingCart)
 			{
 				subtotal += item.Product.RetailPrice * item.QuantityInCart;
 			}
@@ -154,24 +159,22 @@ namespace TRMDesktopUI.ViewModels
 		}
 		public void AddToCart()
 		{
-			CartItemModel existingItem = ShoppingCart.FirstOrDefault(x => x.Product == SelectedProduct);
+			CartItemDisplayModel existingItem = ShoppingCart.FirstOrDefault(x => x.Product == SelectedProduct);
 			if (existingItem != null)
 			{
 				existingItem.QuantityInCart += ItemQuantity;
-				ShoppingCart.Remove(existingItem);
-				ShoppingCart.Add(existingItem);
 			}
 			else
 			{
-				CartItemModel cartItemModel = new CartItemModel
+				CartItemDisplayModel cartItemModel = new CartItemDisplayModel
 				{
 					Product = SelectedProduct,
 					QuantityInCart = ItemQuantity
 				};
 				ShoppingCart.Add(cartItemModel);
 			}
-			SelectedProduct.QuantityInStock -= itemQuantity;
-			itemQuantity = 1;
+			SelectedProduct.QuantityInStock -= ItemQuantity;
+			ItemQuantity = 1;
 			NotifyOfPropertyChange(() => ShoppingCart);
 			NotifyOfPropertyChange(() => SubTotal);
 			NotifyOfPropertyChange(() => Tax);
@@ -182,6 +185,7 @@ namespace TRMDesktopUI.ViewModels
 		{
 			NotifyOfPropertyChange(() => SubTotal);
 			NotifyOfPropertyChange(() => Tax);
+			NotifyOfPropertyChange(() => Total);
 			NotifyOfPropertyChange(() => ShoppingCart);
 			NotifyOfPropertyChange(() => CanCheckOut);
 
@@ -189,7 +193,7 @@ namespace TRMDesktopUI.ViewModels
 		public async Task CheckOutAsync()
 		{
 			SaleModel saleModel = new SaleModel();
-			foreach (CartItemModel item in ShoppingCart)
+			foreach (CartItemDisplayModel item in ShoppingCart)
 			{
 				saleModel.saleDetails.Add(new SaleDetailModel
 				{

@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using AutoMapper;
+using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using TRMDesktopUI.Helpers;
 using TRMDesktopUI.Library.Api;
 using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
+using TRMDesktopUI.Models;
 
 namespace TRMDesktopUI
 {
@@ -40,6 +42,13 @@ namespace TRMDesktopUI
         }
         protected override void Configure()
         {
+            MapperConfiguration config = new MapperConfiguration(cfg =>
+             {
+                 cfg.CreateMap<ProductModel, ProductDisplayModel>();
+                 cfg.CreateMap<CartItemModel, CartItemDisplayModel>();
+             });
+            IMapper mapper = config.CreateMapper();
+            container.Instance(mapper);
             container.Instance(container);
             container.PerRequest<IProductEndpoint, ProductEndpoint>();
             container.PerRequest<ISaleEndpoint, SaleEndpoint>();
