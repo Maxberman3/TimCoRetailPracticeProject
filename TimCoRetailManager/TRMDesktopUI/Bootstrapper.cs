@@ -42,6 +42,7 @@ namespace TRMDesktopUI
         {
             container.Instance(container);
             container.PerRequest<IProductEndpoint, ProductEndpoint>();
+            container.PerRequest<ISaleEndpoint, SaleEndpoint>();
 
             container.
                 Singleton<IWindowManager, WindowManager>()
