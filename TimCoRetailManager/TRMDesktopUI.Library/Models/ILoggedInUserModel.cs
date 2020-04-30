@@ -9,5 +9,7 @@ namespace TRMDesktopUI.Library.Models
         string FirstName { get; set; }
         string Id { get; set; }
         string LastName { get; set; }
+
+        void ResetUserModel();
     }
 }

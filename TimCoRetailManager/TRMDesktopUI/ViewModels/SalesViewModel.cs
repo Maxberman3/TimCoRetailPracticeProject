@@ -211,7 +211,7 @@ namespace TRMDesktopUI.ViewModels
 			NotifyOfPropertyChange(() => Total);
 			NotifyOfPropertyChange(() => ShoppingCart);
 			NotifyOfPropertyChange(() => CanCheckOut);
-
+			NotifyOfPropertyChange(() => CanAddToCart);
 		}
 		public async Task CheckOutAsync()
 		{
@@ -225,7 +225,17 @@ namespace TRMDesktopUI.ViewModels
 				});
 			}
 			await saleEndpoint.PostSale(saleModel);
+			await ResetSalesViewModel();
 		}
+		private async Task ResetSalesViewModel()
+		{
+			ShoppingCart = new BindingList<CartItemDisplayModel>();
+			await LoadProductsAsync();
 
+			NotifyOfPropertyChange(() => SubTotal);
+			NotifyOfPropertyChange(() => Tax);
+			NotifyOfPropertyChange(() => Total);
+			NotifyOfPropertyChange(() => CanCheckOut);
+		}
 	}
 }
