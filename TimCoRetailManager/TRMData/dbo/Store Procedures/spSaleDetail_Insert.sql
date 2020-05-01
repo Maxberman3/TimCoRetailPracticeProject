@@ -2,7 +2,7 @@
 	@SaleId int,
 	@ProductId int,
 	@Quantity int,
-	@PurchasePrice int,
+	@PurchasePrice money,
 	@Tax money
 AS
 	begin

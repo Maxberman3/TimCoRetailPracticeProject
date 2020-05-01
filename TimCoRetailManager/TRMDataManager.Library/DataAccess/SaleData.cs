@@ -46,9 +46,9 @@ namespace TRMDataManager.Library.DataAccess
                 try
                 {
                     dataAccess.StartTransaction("TRMData");
-                    dataAccess.SaveData("dbo.spSale_Insert", saleDbModel, "TRMData");
+                    dataAccess.SaveDataInTransaction("dbo.spSale_Insert", saleDbModel);
 
-                    saleDbModel.Id = dataAccess.LoadDataInTransaction<int, dynamic>("dbo.spLookUp", new { CashierId = cashierId, SaleDate = saleDbModel.SaleDate }).FirstOrDefault();
+                    saleDbModel.Id = dataAccess.LoadDataInTransaction<int, dynamic>("dbo.spLookUp", new { CashierId = cashierId, saleDbModel.SaleDate }).FirstOrDefault();
                     //Finish filling in the sale detail models
                     foreach (SaleDetailDbModel item in details)
                     {
@@ -57,8 +57,9 @@ namespace TRMDataManager.Library.DataAccess
                     };
                     dataAccess.CommitTransaction();
                 }
-                catch
+                catch (Exception e)
                 {
+
                     dataAccess.RollBackTransaction();
                     throw;
                 }

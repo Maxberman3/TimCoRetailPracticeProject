@@ -2,7 +2,6 @@
 {
     class SaleDetailDbModel
     {
-        public int Id { get; set; }
         public int SaleId { get; set; }
         public int ProductId { get; set; }
         public decimal PurchasePrice { get; set; }

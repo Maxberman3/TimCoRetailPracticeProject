@@ -213,7 +213,7 @@ namespace TRMDesktopUI.ViewModels
 			NotifyOfPropertyChange(() => CanCheckOut);
 			NotifyOfPropertyChange(() => CanAddToCart);
 		}
-		public async Task CheckOutAsync()
+		public async Task CheckOut()
 		{
 			SaleModel saleModel = new SaleModel();
 			foreach (CartItemDisplayModel item in ShoppingCart)
